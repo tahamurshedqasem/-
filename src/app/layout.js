@@ -1,12 +1,12 @@
 import "./globals.css";
-import { Cairo } from "next/font/google";
 
-const cairo = Cairo({
-  subsets: ["arabic", "latin"],
-  weight: ["400", "500", "700"],
-  variable: "--font-cairo",
-  display: "swap",
-});
+
+// const cairo = Cairo({
+//   subsets: ["arabic", "latin"],
+//   weight: ["400", "500", "700"],
+//   variable: "--font-cairo",
+//   display: "swap",
+// });
 
 /* ================= SEO METADATA ================= */
 export const metadata = {
@@ -64,7 +64,7 @@ icons: {
 /* ================= ROOT LAYOUT ================= */
 export default function RootLayout({ children }) {
   return (
-    <html lang="ar" dir="rtl" className={cairo.variable}>
+    <html lang="ar" dir="rtl" >
       <body className="font-sans bg-gray-50 text-gray-800 min-h-screen flex flex-col">
         {/* المحتوى */}
         <main className="flex-1">{children}</main>

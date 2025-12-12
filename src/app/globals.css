@@ -1,5 +1,5 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap');
+/* @import url('https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;700&display=swap'); */
 
 /* Tajawal Local Font */
 @font-face {
@@ -34,7 +34,7 @@ textarea {
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
-    --foreground: #ededed;
+    
   }
 }
 
