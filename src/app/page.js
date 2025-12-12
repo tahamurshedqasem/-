@@ -18,19 +18,7 @@ export default function LoginPage() {
     <FaSmile className="text-yellow-500 text-2xl" />
   );
 
-  useEffect(() => {
-    const hour = new Date().getHours();
-    if (hour >= 5 && hour < 12) {
-      setGreeting("صباح الخير!");
-      setIcon(<FaSun className="text-yellow-400 text-2xl" />);
-    } else if (hour >= 12 && hour < 18) {
-      setGreeting("مساء الخير!");
-      setIcon(<FaMoon className="text-blue-500 text-2xl" />);
-    } else {
-      setGreeting("مرحباً بك!");
-      setIcon(<FaSmile className="text-green-500 text-2xl" />);
-    }
-  }, []);
+
 
   const handleLogin = () => {
     router.push("/login");
