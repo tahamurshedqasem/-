@@ -1,7 +1,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useParams } from "next/navigation";
+import { Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   FaUserGraduate,
   FaStar,
@@ -10,27 +11,37 @@ import {
   FaHandsHelping,
 } from "react-icons/fa";
 
-export default function StudentProfilePage() {
-  const { id } = useParams(); // student ID from URL
+export default function PageWrapper() {
+  return (
+    <Suspense fallback={<p className="text-center mt-20">جاري التحميل...</p>}>
+      <StudentProfilePage />
+    </Suspense>
+  );
+}
+
+function StudentProfilePage() {
+  const searchParams = useSearchParams();
+  const id = searchParams.get("id");
 
   const [student, setStudent] = useState(null);
   const [history, setHistory] = useState([]);
-
   const [initiatives, setInitiatives] = useState([]);
   const [excellence, setExcellence] = useState([]);
   const [talents, setTalents] = useState([]);
-
   const [loading, setLoading] = useState(true);
 
-  const token =
-    typeof window !== "undefined" ? localStorage.getItem("token") : null;
+  const [token, setToken] = useState(null);
 
-  // ===============================
-  // Load student info + behavior logs
-  // ===============================
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      setToken(localStorage.getItem("token"));
+    }
+  }, []);
+
   const loadData = async () => {
+    if (!id || !token) return;
+
     try {
-      // 1) Student info
       const res1 = await fetch(
         `https://shaghaf-ishraqa.org/api/students/${id}`,
         {
@@ -39,7 +50,6 @@ export default function StudentProfilePage() {
       );
       const studentData = await res1.json();
 
-      // 2) Logs + categorized lists
       const res2 = await fetch(
         `https://shaghaf-ishraqa.org/api/students/${id}/logs`,
         {
@@ -49,8 +59,6 @@ export default function StudentProfilePage() {
       const logsData = await res2.json();
 
       setStudent(studentData);
-
-      // FULL DATA FROM BACKEND
       setHistory(logsData.logs);
       setInitiatives(logsData.initiatives);
       setExcellence(logsData.excellence);
@@ -64,18 +72,21 @@ export default function StudentProfilePage() {
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [id, token]);
+
+  if (!id)
+    return (
+      <p className="text-center mt-20 text-red-500">معرف الطالبة غير موجود.</p>
+    );
 
   if (loading)
     return (
-      <p className="text-center mt-20 text-gray-600 text-lg">
-        جاري تحميل بيانات الطالبة...
-      </p>
+      <p className="text-center mt-20 text-gray-600">جاري تحميل البيانات...</p>
     );
 
   if (!student)
     return (
-      <p className="text-center mt-20 text-red-500 text-lg">
+      <p className="text-center mt-20 text-red-500">
         لم يتم العثور على الطالبة
       </p>
     );
@@ -85,6 +96,7 @@ export default function StudentProfilePage() {
       dir="rtl"
       className="min-h-screen bg-gradient-to-b from-blue-50 to-blue-100 px-6 py-8 font-[Tajawal]"
     >
+      {/* your full UI unchanged */}
       {/* ---------------------- بطاقة بيانات الطالبة ---------------------- */}
       <div className="bg-white shadow-lg rounded-2xl p-6 mb-8 border border-blue-100 max-w-3xl mx-auto">
         <div className="flex items-center gap-4">
@@ -119,7 +131,6 @@ export default function StudentProfilePage() {
 
       {/* ---------------------- الأقسام ---------------------- */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-5xl mx-auto">
-        {/* --------- قسم المبادرات --------- */}
         <Section
           title="المبادرات"
           icon={<FaHandsHelping className="text-blue-500" />}
@@ -127,7 +138,6 @@ export default function StudentProfilePage() {
           color="blue"
         />
 
-        {/* --------- قسم التميز --------- */}
         <Section
           title="التميز والتفوق"
           icon={<FaAward className="text-yellow-500" />}
@@ -135,7 +145,6 @@ export default function StudentProfilePage() {
           color="yellow"
         />
 
-        {/* --------- قسم المواهب --------- */}
         <Section
           title="الموهبة"
           icon={<FaLightbulb className="text-yellow-500" />}
@@ -143,7 +152,7 @@ export default function StudentProfilePage() {
           color="purple"
         />
 
-        {/* --------- السجل الكامل --------- */}
+        {/* --------- سجل السلوك --------- */}
         <div className="bg-white p-5 rounded-2xl border shadow-sm lg:col-span-2">
           <h2 className="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2">
             <FaStar className="text-blue-500" /> سجل السلوك
@@ -184,7 +193,6 @@ export default function StudentProfilePage() {
   );
 }
 
-/* ---------------------- Component: Section ---------------------- */
 function Section({ title, icon, data, color }) {
   return (
     <div className="bg-white p-5 rounded-2xl border shadow-sm">
