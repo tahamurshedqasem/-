@@ -45,33 +45,7 @@ export default function LoginPage() {
         </h1>
 
         {/* Dynamic Greeting */}
-        <div className="flex justify-center items-center gap-2">
-          {icon}
-          <motion.div
-            className="text-gray-700 text-2xl font-semibold flex"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              visible: {
-                transition: {
-                  staggerChildren: 0.08,
-                },
-              },
-            }}
-          >
-            {phrase.map((char, index) => (
-              <motion.span
-                key={index}
-                variants={{
-                  hidden: { opacity: 0, y: 10 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-              >
-                {char}
-              </motion.span>
-            ))}
-          </motion.div>
-        </div>
+        
 
         <p className="text-gray-600 mt-2 text-lg">
           نُرحب بانضمامك ونتمنى لك تجربة مميزة ومليئة بالإنجاز.
