@@ -14,12 +14,14 @@ import { useEffect, useState } from "react";
 export default function LoginPage() {
   const router = useRouter();
   const [greeting, setGreeting] = useState("");
+  const [displayText, setDisplayText] = useState("");
   const [icon, setIcon] = useState(
     <FaSmile className="text-yellow-500 text-2xl" />
   );
 
   useEffect(() => {
     const hour = new Date().getHours();
+
     if (hour >= 5 && hour < 12) {
       setGreeting("صباح الخير!");
       setIcon(<FaSun className="text-yellow-400 text-2xl" />);
@@ -32,11 +34,23 @@ export default function LoginPage() {
     }
   }, []);
 
+  // Typewriter Arabic-friendly animation
+  useEffect(() => {
+    let i = 0;
+    setDisplayText("");
+
+    const interval = setInterval(() => {
+      setDisplayText((prev) => prev + greeting[i]);
+      i++;
+      if (i >= greeting.length) clearInterval(interval);
+    }, 80);
+
+    return () => clearInterval(interval);
+  }, [greeting]);
+
   const handleLogin = () => {
     router.push("/login");
   };
-
-  const phrase = greeting.split("");
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-100 via-white to-blue-200 text-gray-800">
@@ -51,7 +65,6 @@ export default function LoginPage() {
           <FaSchool className="text-blue-600 text-6xl" />
         </div>
 
-        {/* 🔴 EDIT: اسم النظام */}
         <h1 className="text-5xl font-extrabold text-blue-700 mb-3">
           شغف وإشراقة
         </h1>
@@ -59,30 +72,13 @@ export default function LoginPage() {
         {/* Dynamic Greeting */}
         <div className="flex justify-center items-center gap-2">
           {icon}
-          <motion.div
-            className="text-gray-700 text-2xl font-semibold flex"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              visible: {
-                transition: {
-                  staggerChildren: 0.08,
-                },
-              },
-            }}
+          <motion.span
+            className="text-gray-700 text-2xl font-semibold"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
           >
-            {phrase.map((char, index) => (
-              <motion.span
-                key={index}
-                variants={{
-                  hidden: { opacity: 0, y: 10 },
-                  visible: { opacity: 1, y: 0 },
-                }}
-              >
-                {char}
-              </motion.span>
-            ))}
-          </motion.div>
+            {displayText}
+          </motion.span>
         </div>
 
         <p className="text-gray-600 mt-2 text-lg">
@@ -102,7 +98,7 @@ export default function LoginPage() {
         تسجيل الدخول
       </motion.button>
 
-      {/* 🔴 EDIT: Footer */}
+      {/* Footer */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
