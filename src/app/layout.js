@@ -70,11 +70,11 @@ export default function RootLayout({ children }) {
         <main className="flex-1">{children}</main>
 
         {/* Footer */}
-        <footer className="border-t bg-white text-center py-4 text-sm text-gray-500">
+        {/* <footer className="border-t bg-white text-center py-4 text-sm text-gray-500">
           تم تنفيذه من قبل الموجهة الطلابية
           <br />
           <span className="font-semibold text-gray-700">عفراء آل منجم</span>
-        </footer>
+        </footer> */}
       </body>
     </html>
   );

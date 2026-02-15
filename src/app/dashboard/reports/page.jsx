@@ -21,9 +21,6 @@ export default function ReportsPage() {
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  // ================================
-  // Load Data
-  // ================================
   const loadData = async () => {
     try {
       const headers = { Authorization: `Bearer ${token}` };
@@ -67,11 +64,12 @@ export default function ReportsPage() {
       </p>
     );
 
+  const sortedStudents = [...studentsData].sort(
+    (a, b) => b.points - a.points
+  );
+
   return (
-    <section
-      dir="rtl"
-      className="min-h-screen font-[Tajawal] px-4 md:px-8 py-6"
-    >
+    <section dir="rtl" className="min-h-screen font-[Tajawal] px-4 md:px-8 py-6">
       {/* HEADER */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <motion.h1
@@ -80,7 +78,7 @@ export default function ReportsPage() {
           transition={{ duration: 0.6 }}
           className="text-2xl md:text-3xl font-bold text-blue-700 flex items-center gap-2"
         >
-          <FaChartPie className="text-blue-600" /> التقارير والإحصائيات
+          <FaChartPie /> التقارير والإحصائيات
         </motion.h1>
 
         <motion.button
@@ -93,9 +91,8 @@ export default function ReportsPage() {
         </motion.button>
       </div>
 
-      {/* REPORT BODY */}
+      {/* SCREEN VERSION */}
       <div className="report-area bg-white rounded-2xl shadow-xl p-5 md:p-8 border border-blue-100">
-        {/* PIE CHART */}
         <h2 className="text-xl font-semibold text-blue-700 mb-4 flex items-center gap-2">
           <FaChartPie /> توزيع السلوكيات
         </h2>
@@ -120,81 +117,62 @@ export default function ReportsPage() {
           </ResponsiveContainer>
         </div>
 
-        {/* NEW RANKING VISUALIZATION */}
         <h2 className="text-xl font-semibold text-blue-700 mb-4 flex items-center gap-2">
           <FaChartBar /> ترتيب الطالبات حسب النقاط
         </h2>
 
         <div className="ranking-list">
-          {[...studentsData]
-            .sort((a, b) => b.points - a.points)
-            .map((student, index) => (
-              <div className="rank-item" key={student.name}>
-                <div className="rank-number">{index + 1}</div>
+          {sortedStudents.map((student, index) => (
+            <div className="rank-item" key={student.name}>
+              <div className="rank-number">{index + 1}</div>
 
-                <div className="rank-info">
-                  <h4 className="rank-name">{student.name}</h4>
+              <div className="rank-info">
+                <h4 className="rank-name">{student.name}</h4>
 
-                  <div className="rank-bar">
-                    <div
-                      className="rank-bar-fill"
-                      style={{
-                        width: `${Math.min(student.points * 10, 100)}%`,
-                      }}
-                    ></div>
-                  </div>
-
-                  <p className="rank-points">{student.points} نقطة</p>
+                <div className="rank-bar">
+                  <div
+                    className="rank-bar-fill"
+                    style={{
+                      width: `${Math.min(student.points * 10, 100)}%`,
+                    }}
+                  ></div>
                 </div>
+
+                <p className="rank-points">{student.points} نقطة</p>
               </div>
-            ))}
+            </div>
+          ))}
         </div>
       </div>
 
       {/* PRINT VERSION */}
       <div className="print-area">
-        <h1 className="text-3xl font-bold mb-4 text-center">
-          تقرير السلوكيات والنتائج
-        </h1>
+        <h1 className="print-title">تقرير السلوكيات والنتائج</h1>
 
-        <p className="text-gray-700 text-center mb-6">
+        <p className="print-date">
           التاريخ: {new Date().toLocaleDateString("ar-SA")}
         </p>
 
-        {/* PIE STATIC */}
-        <h2 className="text-xl font-semibold text-blue-700 mb-3 text-center">
-          توزيع السلوكيات
-        </h2>
+        <h2 className="print-section-title">توزيع السلوكيات</h2>
 
         <svg width="400" height="300" style={{ margin: "0 auto" }}>
           <circle cx="200" cy="150" r="100" fill="#22c55e" />
           <path d="M200,150 L200,50 A100,100 0 0,1 300,150 Z" fill="#ef4444" />
         </svg>
 
-        <h2 className="text-xl font-semibold text-blue-700 mt-10 mb-4 text-center">
-          ترتيب الطالبات حسب النقاط
-        </h2>
+        <h2 className="print-section-title">ترتيب الطالبات حسب النقاط</h2>
 
-        {[...studentsData]
-          .sort((a, b) => b.points - a.points)
-          .map((student, i) => (
-            <div
-              key={i}
-              style={{
-                marginBottom: "12px",
-                borderBottom: "1px solid #ccc",
-                paddingBottom: "6px",
-              }}
-            >
-              <strong>
-                {i + 1}- {student.name}
-              </strong>{" "}
-              — {student.points} نقطة
-            </div>
-          ))}
+        {sortedStudents.map((student, i) => (
+          <div key={i} className="print-student-row">
+            <strong>
+              {i + 1}- {student.name}
+            </strong>{" "}
+            — {student.points} نقطة
+          </div>
+        ))}
       </div>
 
-      {/* CSS */}
+      {/* STYLES */}
       <style jsx>{`
         .ranking-list {
           display: flex;
@@ -255,10 +233,20 @@ export default function ReportsPage() {
           margin-top: 6px;
         }
 
-        /* PRINT */
+        /* PRINT STYLES */
+        .print-area {
+          display: none;
+        }
+
         @media print {
+          @page {
+            size: A4 portrait;
+            margin: 20mm;
+          }
+
           body {
             -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
             background: white !important;
           }
 
@@ -268,18 +256,39 @@ export default function ReportsPage() {
 
           .print-area {
             display: block !important;
-            padding: 20px;
+            width: 100%;
             font-size: 18px;
           }
 
-          svg {
-            display: block !important;
-            margin: 0 auto !important;
+          .print-title {
+            text-align: center;
+            font-size: 28px;
+            margin-bottom: 10px;
           }
-        }
 
-        .print-area {
-          display: none;
+          .print-date {
+            text-align: center;
+            margin-bottom: 30px;
+          }
+
+          .print-section-title {
+            text-align: center;
+            font-size: 22px;
+            margin: 30px 0 15px;
+          }
+
+          .print-student-row {
+            margin-bottom: 12px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 6px;
+            page-break-inside: avoid;
+            break-inside: avoid;
+          }
+
+          h1,
+          h2 {
+            page-break-after: avoid;
+          }
         }
       `}</style>
     </section>
