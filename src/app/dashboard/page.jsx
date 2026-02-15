@@ -20,20 +20,25 @@ export default function DashboardPage() {
   const [students, setStudents] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // NEW: Load behaviors
   const [positiveBehaviors, setPositiveBehaviors] = useState([]);
   const [negativeBehaviors, setNegativeBehaviors] = useState([]);
 
   const [selectedStudent, setSelectedStudent] = useState(null);
   const [selectedBehavior, setSelectedBehavior] = useState(null);
   const [behaviorType, setBehaviorType] = useState(null);
-const [positiveCount, setPositiveCount] = useState(0);
-const [negativeCount, setNegativeCount] = useState(0);
+
+  const [positiveCount, setPositiveCount] = useState(0);
+  const [negativeCount, setNegativeCount] = useState(0);
+
+  /* ---------------- FILTER STATES ---------------- */
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterGrade, setFilterGrade] = useState("all");
+  const [sortByPoints, setSortByPoints] = useState("desc");
 
   const token =
     typeof window !== "undefined" ? localStorage.getItem("token") : null;
 
-  // Load Students + Behaviors
+  /* ---------------- LOAD DATA ---------------- */
   const loadData = async () => {
     try {
       const res = await fetch(`${API}/students`, {
@@ -42,21 +47,18 @@ const [negativeCount, setNegativeCount] = useState(0);
       const studentsData = await res.json();
       setStudents(studentsData);
 
-      // GET Positive Logs
       const logsPos = await fetch(`${API}/logs/type/إيجابي`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const posLogs = await logsPos.json();
       setPositiveCount(posLogs.length);
 
-      // GET Negative Logs
       const logsNeg = await fetch(`${API}/logs/type/سلبي`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       const negLogs = await logsNeg.json();
       setNegativeCount(negLogs.length);
 
-      // Load available behavior events (like before)
       const pos = await fetch(`${API}/behaviors/type/إيجابي`, {
         headers: { Authorization: `Bearer ${token}` },
       });
@@ -73,18 +75,39 @@ const [negativeCount, setNegativeCount] = useState(0);
     }
   };
 
-
   useEffect(() => {
     loadData();
   }, []);
 
-  // Logout
+  /* ---------------- FILTERING LOGIC ---------------- */
+  const filteredStudents = students
+    .filter((student) => {
+      const matchesName = student.name
+        .toLowerCase()
+        .includes(searchTerm.toLowerCase());
+
+      const matchesGrade =
+        filterGrade === "all" || String(student.grade) === filterGrade;
+
+      return matchesName && matchesGrade;
+    })
+    .sort((a, b) =>
+      sortByPoints === "desc" ? b.points - a.points : a.points - b.points,
+    );
+
+  const resetFilters = () => {
+    setSearchTerm("");
+    setFilterGrade("all");
+    setSortByPoints("desc");
+  };
+
+  /* ---------------- LOGOUT ---------------- */
   const handleLogout = () => {
     localStorage.clear();
     router.push("/login");
   };
 
-  // Save points
+  /* ---------------- SAVE BEHAVIOR ---------------- */
   const saveBehavior = async () => {
     if (!selectedBehavior) return alert("اختر السلوك أولاً");
 
@@ -100,7 +123,6 @@ const [negativeCount, setNegativeCount] = useState(0);
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
-          Accept: "application/json",
         },
         body: JSON.stringify(payload),
       });
@@ -109,48 +131,46 @@ const [negativeCount, setNegativeCount] = useState(0);
       setSelectedBehavior(null);
       loadData();
     } catch (err) {
-      console.error("Failed to save behavior:", err);
+      console.error(err);
     }
   };
 
- const stats = [
-   {
-     title: "عدد الطالبات",
-     value: students.length,
-     icon: <FaUserGraduate size={26} />,
-     gradient: "from-blue-400 to-blue-600",
-   },
-   {
-     title: "السلوك الإيجابي",
-     value: positiveCount, // ⬅ تم التعديل
-     icon: <FaSmile size={26} />,
-     gradient: "from-green-400 to-green-600",
-   },
-   {
-     title: "السلوك السلبي",
-     value: negativeCount, // ⬅ تم التعديل
-     icon: <FaFrown size={26} />,
-     gradient: "from-red-400 to-red-600",
-   },
-   {
-     title: "نسبة الانضباط",
-     value:
-       students.length > 0
-         ? `${Math.round(
-             (students.filter((s) => s.points > 0).length / students.length) *
-               100
-           )}%`
-         : "0%",
-     icon: <FaChartPie size={26} />,
-     gradient: "from-teal-400 to-teal-600",
-   },
- ];
+  /* ---------------- STATS ---------------- */
+  const stats = [
+    {
+      title: "عدد الطالبات",
+      value: students.length,
+      icon: <FaUserGraduate size={26} />,
+      gradient: "from-blue-400 to-blue-600",
+    },
+    {
+      title: "السلوك الإيجابي",
+      value: positiveCount,
+      icon: <FaSmile size={26} />,
+      gradient: "from-green-400 to-green-600",
+    },
+    {
+      title: "السلوك السلبي",
+      value: negativeCount,
+      icon: <FaFrown size={26} />,
+      gradient: "from-red-400 to-red-600",
+    },
+    {
+      title: "نسبة الانضباط",
+      value:
+        students.length > 0
+          ? `${Math.round(
+              (students.filter((s) => s.points > 0).length / students.length) *
+                100,
+            )}%`
+          : "0%",
+      icon: <FaChartPie size={26} />,
+      gradient: "from-teal-400 to-teal-600",
+    },
+  ];
 
   return (
-    <section
-      dir="rtl"
-      className="min-h-screen bg-transparent font-[Tajawal] px-4 py-6"
-    >
+    <section dir="rtl" className="min-h-screen font-[Tajawal] px-4 py-6">
       {/* HEADER */}
       <div className="flex items-center justify-between mb-8">
         <h1 className="text-3xl font-bold text-blue-700 flex items-center gap-2">
@@ -165,8 +185,8 @@ const [negativeCount, setNegativeCount] = useState(0);
         </button>
       </div>
 
-      {/* STATS CARDS */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 w-full">
+      {/* STATS */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         {stats.map((item, i) => (
           <div
             key={i}
@@ -179,12 +199,48 @@ const [negativeCount, setNegativeCount] = useState(0);
         ))}
       </div>
 
-      {/* STUDENTS TABLE */}
-      <div className="bg-white/80 rounded-2xl shadow-xl mt-10 p-6 border border-blue-100">
-        <h2 className="text-xl font-bold text-blue-700 mb-4 flex items-center gap-2">
-          <FaClipboardList /> قائمة الطالبات
-        </h2>
+      {/* FILTER BAR */}
+      <div className="bg-white rounded-2xl shadow-lg mt-8 p-4 grid md:grid-cols-4 gap-4">
+        <input
+          type="text"
+          placeholder="بحث باسم الطالبة..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="border p-2 rounded-lg"
+        />
 
+        <select
+          value={filterGrade}
+          onChange={(e) => setFilterGrade(e.target.value)}
+          className="border p-2 rounded-lg"
+        >
+          <option value="all">كل الصفوف</option>
+          {[...new Set(students.map((s) => s.grade))].map((grade) => (
+            <option key={grade} value={grade}>
+              الصف {grade}
+            </option>
+          ))}
+        </select>
+
+        <select
+          value={sortByPoints}
+          onChange={(e) => setSortByPoints(e.target.value)}
+          className="border p-2 rounded-lg"
+        >
+          <option value="desc">الأعلى نقاط</option>
+          <option value="asc">الأقل نقاط</option>
+        </select>
+
+        <button
+          onClick={resetFilters}
+          className="bg-gray-500 text-white rounded-lg"
+        >
+          إعادة تعيين
+        </button>
+      </div>
+
+      {/* TABLE */}
+      <div className="bg-white rounded-2xl shadow-xl mt-8 p-6">
         {loading ? (
           <p className="text-center py-6">جاري التحميل...</p>
         ) : (
@@ -198,7 +254,7 @@ const [negativeCount, setNegativeCount] = useState(0);
               </tr>
             </thead>
             <tbody>
-              {students.map((s) => (
+              {filteredStudents.map((s) => (
                 <tr
                   key={s.id}
                   onClick={() => setSelectedStudent(s)}
@@ -212,8 +268,8 @@ const [negativeCount, setNegativeCount] = useState(0);
                       s.status === "إيجابي"
                         ? "text-green-700"
                         : s.status === "سلبي"
-                        ? "text-red-700"
-                        : "text-blue-600"
+                          ? "text-red-700"
+                          : "text-blue-600"
                     }`}
                   >
                     {s.status}
@@ -224,87 +280,6 @@ const [negativeCount, setNegativeCount] = useState(0);
           </table>
         )}
       </div>
-
-      {/* BEHAVIOR MODAL */}
-      <AnimatePresence>
-        {selectedStudent && (
-          <motion.div
-            className="fixed inset-0 bg-black/40 flex justify-center items-center z-50 p-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <div className="bg-white rounded-2xl p-6 w-full max-w-md shadow-2xl">
-              <h2 className="text-xl font-bold text-blue-700 mb-3 flex items-center gap-2">
-                <FaListUl /> إضافة سلوك للطالبة
-              </h2>
-
-              <p className="text-gray-600 mb-3">
-                الطالبة: <b>{selectedStudent.name}</b>
-              </p>
-
-              {/* Select behavior type */}
-              <div className="flex gap-3 mb-4">
-                <button
-                  className="flex-1 bg-green-500 text-white py-2 rounded-lg"
-                  onClick={() => setBehaviorType("positive")}
-                >
-                  سلوك إيجابي
-                </button>
-                <button
-                  className="flex-1 bg-red-500 text-white py-2 rounded-lg"
-                  onClick={() => setBehaviorType("negative")}
-                >
-                  سلوك سلبي
-                </button>
-              </div>
-
-              {/* Behavior list */}
-              {behaviorType && (
-                <select
-                  className="w-full border p-2 rounded-lg mb-4"
-                  onChange={(e) =>
-                    setSelectedBehavior(
-                      (behaviorType === "positive"
-                        ? positiveBehaviors
-                        : negativeBehaviors
-                      ).find((b) => b.id == e.target.value)
-                    )
-                  }
-                >
-                  <option value="">اختر السلوك</option>
-
-                  {(behaviorType === "positive"
-                    ? positiveBehaviors
-                    : negativeBehaviors
-                  ).map((b) => (
-                    <option key={b.id} value={b.id}>
-                      {b.category} - {b.event} ({b.points})
-                    </option>
-                  ))}
-                </select>
-              )}
-
-              {/* Buttons */}
-              <div className="flex justify-between mt-4">
-                <button
-                  onClick={() => setSelectedStudent(null)}
-                  className="bg-gray-300 px-4 py-2 rounded-lg"
-                >
-                  إلغاء
-                </button>
-
-                <button
-                  onClick={saveBehavior}
-                  className="bg-blue-600 text-white px-5 py-2 rounded-lg"
-                >
-                  حفظ
-                </button>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </section>
   );
 }

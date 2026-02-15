@@ -1,4 +1,5 @@
 "use client";
+
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import {
@@ -9,44 +10,31 @@ import {
   FaMoon,
   FaSmile,
 } from "react-icons/fa";
+import { TypeAnimation } from "react-type-animation";
 import { useEffect, useState } from "react";
 
 export default function LoginPage() {
   const router = useRouter();
-  const [greeting, setGreeting] = useState("");
-  const [displayText, setDisplayText] = useState("");
   const [icon, setIcon] = useState(
-    <FaSmile className="text-yellow-500 text-2xl" />
+    <FaSmile className="text-green-500 text-2xl" />,
   );
+  const [greetingText, setGreetingText] = useState("مرحباً بك!");
 
-  // useEffect(() => {
-  //   const hour = new Date().getHours();
-
-  //   if (hour >= 5 && hour < 12) {
-  //     setGreeting("صباح الخير!");
-  //     setIcon(<FaSun className="text-yellow-400 text-2xl" />);
-  //   } else if (hour >= 12 && hour < 18) {
-  //     setGreeting("مساء الخير!");
-  //     setIcon(<FaMoon className="text-blue-500 text-2xl" />);
-  //   } else {
-  //     setGreeting("مرحباً بك!");
-  //     setIcon(<FaSmile className="text-green-500 text-2xl" />);
-  //   }
-  // }, []);
-
-  // Typewriter Arabic-friendly animation
+  /* ---------------- Greeting Based on Time ---------------- */
   useEffect(() => {
-    let i = 0;
-    setDisplayText("");
+    const hour = new Date().getHours();
 
-    const interval = setInterval(() => {
-      setDisplayText((prev) => prev + greeting[i]);
-      i++;
-      if (i >= greeting.length) clearInterval(interval);
-    }, 80);
-
-    return () => clearInterval(interval);
-  }, [greeting]);
+    if (hour >= 5 && hour < 12) {
+      setGreetingText("صباح الخير!");
+      setIcon(<FaSun className="text-yellow-400 text-2xl" />);
+    } else if (hour >= 12 && hour < 18) {
+      setGreetingText("مساء الخير!");
+      setIcon(<FaMoon className="text-blue-500 text-2xl" />);
+    } else {
+      setGreetingText("مرحباً بك!");
+      setIcon(<FaSmile className="text-green-500 text-2xl" />);
+    }
+  }, []);
 
   const handleLogin = () => {
     router.push("/login");
@@ -69,16 +57,16 @@ export default function LoginPage() {
           شغف وإشراقة
         </h1>
 
-        {/* Dynamic Greeting */}
+        {/* Greeting Animation */}
         <div className="flex justify-center items-center gap-2">
           {icon}
-          <motion.span
+          <TypeAnimation
+            sequence={[greetingText, 2000]}
+            wrapper="span"
+            speed={50}
+            repeat={Infinity}
             className="text-gray-700 text-2xl font-semibold"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-          >
-            {displayText}
-          </motion.span>
+          />
         </div>
 
         <p className="text-gray-600 mt-2 text-lg">
